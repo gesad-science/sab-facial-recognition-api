@@ -132,6 +132,7 @@ async def post_attendance_list(record: Dict[str, Any]):
         raise HTTPException(status_code=500, detail=f"Erro ao adicionar registro: {str(e)}")
 
 
+
 # 🌐 Cria o túnel HTTPS público
 #ngrok_tunnel = ngrok.connect(8000)
 static_domain = "nonpossibly-aspish-fletcher.ngrok-free.dev"
