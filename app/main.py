@@ -1,19 +1,28 @@
-"""
-from fastapi import FastAPI
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
+import base64
+
+ex_base64 = Path("app/base64example.txt").read_text().strip()
 
 people_present: list[str, any] = []
 
 app = FastAPI()
 
 class Image(BaseModel):
-    base64: str = Field(examples=["Base64"])
-    model: str = Field(default=None, examples=["ResNet"])
+    base64: str = Field(default=ex_base64, examples=["iVBORw0KGgoAAAANSUhEUgAAAoAAAA..."])
+    model: str = Field(default="ResNet")
 
 @app.post("/classify/")
 async def classifyFace(image: Image):
-
+    try:
+        base64.b64decode(image.base64, validate=True)
+    except:
+        raise HTTPException(status_code=422, detail="Base64 field is not a valid Base64")
+    
+    print("calling the function...")
     result = {
         "classify result": "Camila",
         "confidence": 0.8792132502
@@ -32,78 +41,3 @@ async def attendance() -> dict:
 @app.get("/attendence")
 async def fake_attendance() -> RedirectResponse:
     return RedirectResponse(url="https://youtu.be/dQw4w9WgXcQ?si=KeYXsJOF8bPp7N_Q")
-"""
-from typing import Any, Annotated
-
-from fastapi import FastAPI, Response, File, UploadFile
-from fastapi.responses import JSONResponse, RedirectResponse, HTMLResponse
-from pydantic import BaseModel, Field, EmailStr
-
-app = FastAPI()
-
-## minha tentativa real
-class Image(BaseModel):
-    base64: str = Field(examples=["Base64"])
-    model: str = Field(default=None, examples=["ResNet"])
-## --------------------
-
-class UserIn(BaseModel):
-    username: str
-    password: str
-    email: EmailStr
-    full_name: str | None = None
-
-class UserOut(BaseModel):
-    username: str
-    email: EmailStr
-    full_name: str | None = None
-
-@app.get("/link")
-async def get_link(tp: bool = False) -> Response:
-    if tp:
-        return RedirectResponse(url="https://youtu.be/hPr-Yc92qaY?si=I3BPoMwHFA-EMGXk")
-    return JSONResponse(content={"message": "Here's your interdimensional portal."})
-
-@app.post("/user/", response_model=UserOut)
-async def create_user(user: UserIn) -> Any:
-    return user
-
-## minha tentativa real
-@app.post("/classify/")
-async def classifyFace(image: Image):
-    return image
-## --------------------
-
-
-######
-@app.post("/files/")
-async def create_files(
-    files: Annotated[list[bytes], File(description="Multiple files as bytes")],
-):
-    return {"file_sizes": [len(file) for file in files]}
-
-
-@app.post("/uploadfiles/")
-async def create_upload_files(
-    files: Annotated[
-        list[UploadFile], File(description="Multiple files as UploadFile")
-    ],
-):
-    return {"filenames": [file.filename for file in files]}
-
-
-@app.get("/")
-async def main():
-    content = """
-<body>
-<form action="/files/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-</form>
-<form action="/uploadfiles/" enctype="multipart/form-data" method="post">
-<input name="files" type="file" multiple>
-<input type="submit">
-</form>
-</body>
-    """
-    return HTMLResponse(content=content)
