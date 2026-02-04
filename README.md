@@ -1,4 +1,4 @@
-# FastAPI – API Rewrite (WIP)
+# FastAPI – API Rewrite
 
 This branch contains an initial rewrite of the existing API using FastAPI.
 The goal is to study the framework, its best practices, and gradually
@@ -12,20 +12,21 @@ rebuild the current endpoints.
 - Base64 input validation
 - Basic response structure for classification
 - `/attendance` endpoint
+- Part of the database made
 
 ## Work in progress
 
 - Real image decoding and preprocessing
 - Integration with actual ML model
 - Proper error handling and edge cases
-- Database integration (SQL)
+- Finalize the database integration (SQL)
 - Project structure and file organization
 - HTTPS setup (as recommended by FastAPI documentation)
 - Input/output schema refinement
 - Unit tests
 - Logging
 
-## 🧠 Notes
+## Notes
 
 - This is a study-driven rewrite.
 - Current classification logic is mocked.
