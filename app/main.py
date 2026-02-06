@@ -27,9 +27,9 @@ class PersonPublic(PersonBase):
 class PersonCreate(PersonBase):
     secret_data: str
 
-class PersonUpdate(PersonBase):
-    name: str | None = None
-    secret_name: str | None = None
+
+
+
 
 sqlite_file_name = "database.db" 
 sqlite_url = f"sqlite:///{sqlite_file_name}"
@@ -93,7 +93,8 @@ def delete_person(session: SessionDep):
 
 
 @app.post("/classify/")
-async def classifyFace(image: Image):
+async def classifyFace():
+    """
     try:
         base64.b64decode(image.base64, validate=True)
     except:
@@ -107,6 +108,12 @@ async def classifyFace(image: Image):
     people_present.append(result)
 
     return result
+    """
+    create_person(PersonBase(name="Guilhereme", base64=ex_base64, confidence=0.867483), SessionDep)
+
+
+
+
 
 @app.get("/attendance")
 async def attendance() -> dict:
