@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field as pField
 import base64
 from datetime import datetime
-from sqlmodel import Field as sqlField, Session, SQLModel, create_engine, select ### maybe we can use postgreSQL later
+from sqlmodel import Field as sqlField, Session, SQLModel, create_engine, select, delete ### maybe we can use postgreSQL later
 
 app = FastAPI()
 
@@ -18,11 +18,11 @@ class PersonBase(SQLModel):
 
 class Person(PersonBase, table=True):
     id: int | None = sqlField(default=None, primary_key=True)   #default is None 'cause we want to be automatic without specify the id
-    #date: datetime = sqlField(index=True)                      #need to be automatic
-    secret_data: str                                            #just a test
+    date: datetime = sqlField(index=True, default_factory=datetime.utcnow)
 
 class PersonPublic(PersonBase):
     id: int
+    date: datetime = sqlField(index=True, default_factory=datetime.utcnow)
 
 class PersonCreate(PersonBase):
     secret_data: str
@@ -58,7 +58,7 @@ def on_startup():
     create_db_and_tables()
 
 @app.post("/people/", response_model=PersonPublic)              #we don't actually return a PersonPublic so db_person will be ajusted to a PersonPublic ('cause of "responde_model=")
-def create_person(person: PersonCreate, session: SessionDep):
+def create_person(person: PersonBase, session: SessionDep):
     db_person = Person.model_validate(person)
     session.add(db_person)
     session.commit()
@@ -74,33 +74,20 @@ def read_people(
     people = session.exec(select(Person).offset(offset).limit(limit)).all()
     return people
 
-@app.get("/people/{person_id}", response_model=PersonPublic)
-def read_person(person_id: int, session: SessionDep):
-    person = session.get(Person, person_id)
-    if not person:
-        raise HTTPException(status_code=404, detail="Person not found")
-    return person
-
-@app.delete("/people/{person_id}")
-def delete_person(person_id: int, session: SessionDep):
+@app.delete("/restart/")
+def delete_person(session: SessionDep):
+    """
     person = session.get(Person, person_id)
     if not person:
         raise HTTPException(status_code=404, detail="Person not found")
     session.delete(person)
     session.commit()
     return {"ok": True}
-
-@app.patch("/people/{person_id}", response_model=PersonPublic)
-def update_person(person_id: int, person: PersonUpdate, session: SessionDep):
-    person_db = session.get(Person, person_id)
-    if not person_db:
-        raise HTTPException(status_code=404, detail="Person not found")
-    person_data = person.model_dump(exclude_unset=True)     #"exclude_unset=True" sends only the infos the user sent
-    person_db.sqlmodel_update(person_data)
-    session.add(person_db)
-    session.commit()
-    session.refresh(person_db)
-    return person_db
+    """
+    with Session(engine) as session:
+        session.exec(delete(Person))
+        session.commit()
+        return {"ok": True}
 
 
 
