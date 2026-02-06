@@ -27,6 +27,10 @@ class PersonPublic(PersonBase):
 class PersonCreate(PersonBase):
     secret_data: str
 
+class PersonUpdate(PersonBase):
+    name: str | None = None
+    secret_name: str | None = None
+
 sqlite_file_name = "database.db" 
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
@@ -53,14 +57,15 @@ class Image(BaseModel):
 def on_startup():
     create_db_and_tables()
 
-@app.post("/people/")
-def create_person(person: Person, session: SessionDep) -> Person:
-    session.add(person)
+@app.post("/people/", response_model=PersonPublic)              #we don't actually return a PersonPublic so db_person will be ajusted to a PersonPublic ('cause of "responde_model=")
+def create_person(person: PersonCreate, session: SessionDep):
+    db_person = Person.model_validate(person)
+    session.add(db_person)
     session.commit()
-    session.refresh(person)
-    return person
+    session.refresh(db_person)
+    return db_person
 
-@app.get("/people/")
+@app.get("/people/", response_model=list[PersonPublic])
 def read_people(
     session: SessionDep,
     offset: int = 0,
@@ -69,8 +74,8 @@ def read_people(
     people = session.exec(select(Person).offset(offset).limit(limit)).all()
     return people
 
-@app.get("/people/{person_id}")
-def read_person(person_id: int, session: SessionDep) -> Person:
+@app.get("/people/{person_id}", response_model=PersonPublic)
+def read_person(person_id: int, session: SessionDep):
     person = session.get(Person, person_id)
     if not person:
         raise HTTPException(status_code=404, detail="Person not found")
@@ -84,6 +89,18 @@ def delete_person(person_id: int, session: SessionDep):
     session.delete(person)
     session.commit()
     return {"ok": True}
+
+@app.patch("/people/{person_id}", response_model=PersonPublic)
+def update_person(person_id: int, person: PersonUpdate, session: SessionDep):
+    person_db = session.get(Person, person_id)
+    if not person_db:
+        raise HTTPException(status_code=404, detail="Person not found")
+    person_data = person.model_dump(exclude_unset=True)     #"exclude_unset=True" sends only the infos the user sent
+    person_db.sqlmodel_update(person_data)
+    session.add(person_db)
+    session.commit()
+    session.refresh(person_db)
+    return person_db
 
 
 
