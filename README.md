@@ -4,27 +4,28 @@ This branch contains an initial rewrite of the existing API using FastAPI.
 The goal is to study the framework, its best practices, and gradually
 rebuild the current endpoints.
 
+## To run
+
+`uv run fastapi dev app/main.py`
+
 ## What is implemented
 
 - FastAPI application setup
 - Pydantic models for request validation
-- `/classify` endpoint (stub implementation)
-- Base64 input validation
-- Basic response structure for classification
+- SQLModel database
+- `/mock/classify` endpoint
 - `/attendance` endpoint
-- Part of the database made
+- `/restart` endpoint
+- Base64 input validation
+- Random classification response (mock)
 
 ## Work in progress
 
-- Real image decoding and preprocessing
-- Integration with actual ML model
+- Integration with a ML model
 - Proper error handling and edge cases
-- Finalize the database integration (SQL)
 - Project structure and file organization
-- HTTPS setup (as recommended by FastAPI documentation)
-- Input/output schema refinement
+- HTTPS setup (FastAPI Cloud)
 - Unit tests
-- Logging
 
 ## Notes
 

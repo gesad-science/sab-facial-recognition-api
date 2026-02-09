@@ -1,7 +1,8 @@
 from typing import Annotated
 from pathlib import Path
+import random
 
-from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi import FastAPI, HTTPException, Depends, Query, status
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field as pField
 import base64
@@ -10,7 +11,7 @@ from sqlmodel import Field as sqlField, Session, SQLModel, create_engine, select
 
 app = FastAPI()
 
-people_present: list[str, any] = []
+#classes
 class PersonBase(SQLModel):
     name: str = sqlField(index=True)                            #index is True to search be easier (filter by name)
     base64: str
@@ -24,13 +25,13 @@ class PersonPublic(PersonBase):
     id: int
     date: datetime = sqlField(index=True, default_factory=datetime.utcnow)
 
-class PersonCreate(PersonBase):
-    secret_data: str
+ex_base64 = Path("app/base64example.txt").read_text().strip()
+class Image(BaseModel):
+    base64: str = pField(default=ex_base64, examples=["iVBORw0KGgoAAAANSUhEUgAAAoAAAA..."])
+    model: str = pField(default="ResNet")
+#end classes
 
-
-
-
-
+#start database
 sqlite_file_name = "database.db" 
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
@@ -46,18 +47,12 @@ def get_session():
 
 SessionDep = Annotated[Session, Depends(get_session)]           #simplifies the code
 
-
-ex_base64 = Path("app/base64example.txt").read_text().strip()
-class Image(BaseModel):
-    base64: str = pField(default=ex_base64, examples=["iVBORw0KGgoAAAANSUhEUgAAAoAAAA..."])
-    model: str = pField(default="ResNet")
-
-
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+#"end" start database
 
-@app.post("/people/", response_model=PersonPublic)              #we don't actually return a PersonPublic so db_person will be ajusted to a PersonPublic ('cause of "responde_model=")
+#functions and endpoints
 def create_person(person: PersonBase, session: SessionDep):
     db_person = Person.model_validate(person)
     session.add(db_person)
@@ -65,7 +60,39 @@ def create_person(person: PersonBase, session: SessionDep):
     session.refresh(db_person)
     return db_person
 
-@app.get("/people/", response_model=list[PersonPublic])
+@app.delete("/restart/", status_code=status.HTTP_204_NO_CONTENT)
+def delete_person(session: SessionDep):
+    with Session(engine) as session:
+        session.exec(delete(Person))
+        session.commit()
+        return
+
+@app.post("/mock/classify/", response_model=PersonPublic, status_code=status.HTTP_201_CREATED)            #we don't actually return a PersonPublic so db_person will be ajusted to a PersonPublic ('cause of "responde_model=")
+async def classify_face(image: Image, session: SessionDep):
+    try:
+        base64.b64decode(image.base64, validate=True)
+    except:
+        raise HTTPException(status_code=422, detail="Base64 field is not a valid Base64")
+        
+    classes = ["Guilherme",
+               "David",
+               "Camila",
+               "Luna",
+               "Alan",
+               "Paulo Henrique",
+               "Layza"]
+    datas = PersonBase(
+        name=random.choice(classes),
+        base64=random.choice([ex_base64, image.base64]),
+        confidence=random.uniform(0.5, 1)
+    )
+    try:
+        new_person = create_person(datas, session)
+    except:
+        raise HTTPException(status_code=400, detail="impossible to create a new person")    #generic exception (for now)
+    return new_person
+    
+@app.get("/attendance/", response_model=list[PersonPublic])
 def read_people(
     session: SessionDep,
     offset: int = 0,
@@ -73,54 +100,6 @@ def read_people(
 ) -> list[Person]:
     people = session.exec(select(Person).offset(offset).limit(limit)).all()
     return people
-
-@app.delete("/restart/")
-def delete_person(session: SessionDep):
-    """
-    person = session.get(Person, person_id)
-    if not person:
-        raise HTTPException(status_code=404, detail="Person not found")
-    session.delete(person)
-    session.commit()
-    return {"ok": True}
-    """
-    with Session(engine) as session:
-        session.exec(delete(Person))
-        session.commit()
-        return {"ok": True}
-
-
-
-
-@app.post("/classify/")
-async def classifyFace():
-    """
-    try:
-        base64.b64decode(image.base64, validate=True)
-    except:
-        raise HTTPException(status_code=422, detail="Base64 field is not a valid Base64")
-    
-    print("calling the function...")
-    result = {
-        "classify result": "Camila",
-        "confidence": 0.8792132502
-        }
-    people_present.append(result)
-
-    return result
-    """
-    create_person(PersonBase(name="Guilhereme", base64=ex_base64, confidence=0.867483), SessionDep)
-
-
-
-
-
-@app.get("/attendance")
-async def attendance() -> dict:
-    return {
-        "count": len(people_present),
-        "people": people_present
-    }
 
 @app.get("/attendence")
 async def fake_attendance() -> RedirectResponse: 
