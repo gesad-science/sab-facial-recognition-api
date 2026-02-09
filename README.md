@@ -16,8 +16,10 @@ rebuild the current endpoints.
 - `/mock/classify` endpoint
 - `/attendance` endpoint
 - `/restart` endpoint
+- `/gallery` endpoint
 - Base64 input validation
 - Random classification response (mock)
+- Middleware for ngrok HTTPS
 
 ## Work in progress
 

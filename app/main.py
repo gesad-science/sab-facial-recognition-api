@@ -2,14 +2,28 @@ from typing import Annotated
 from pathlib import Path
 import random
 
-from fastapi import FastAPI, HTTPException, Depends, Query, status
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, HTTPException, Depends, Query, status, Request
+from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field as pField
 import base64
 from datetime import datetime
 from sqlmodel import Field as sqlField, Session, SQLModel, create_engine, select, delete ### maybe we can use postgreSQL later
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
+
+#middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins="nonpossibly-aspish-fletcher.ngrok-free.dev",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+#end middleware
 
 #classes
 class PersonBase(SQLModel):
@@ -23,7 +37,7 @@ class Person(PersonBase, table=True):
 
 class PersonPublic(PersonBase):
     id: int
-    date: datetime = sqlField(index=True, default_factory=datetime.utcnow)
+    date: datetime
 
 ex_base64 = Path("app/base64example.txt").read_text().strip()
 class Image(BaseModel):
@@ -83,7 +97,7 @@ async def classify_face(image: Image, session: SessionDep):
                "Layza"]
     datas = PersonBase(
         name=random.choice(classes),
-        base64=random.choice([ex_base64, image.base64]),
+        base64=image.base64,
         confidence=random.uniform(0.5, 1)
     )
     try:
@@ -104,3 +118,13 @@ def read_people(
 @app.get("/attendence")
 async def fake_attendance() -> RedirectResponse: 
     return RedirectResponse(url="https://youtu.be/dQw4w9WgXcQ?si=KeYXsJOF8bPp7N_Q")
+
+@app.get("/gallery/", response_class=HTMLResponse)
+async def view_gallery(request: Request, session: SessionDep):
+    statement = select(Person).order_by(Person.date.desc())
+    people = session.exec(statement).all()
+    
+    return templates.TemplateResponse(
+        "gallery.html", 
+        {"request": request, "people": people}
+    )
