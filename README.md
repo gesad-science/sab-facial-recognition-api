@@ -6,7 +6,8 @@ rebuild the current endpoints.
 
 ## To run
 
-`uv run fastapi dev app/main.py`
+FastAPI: `uv run fastapi dev app/main.py`
+NGROK: `ngrok http 8000`
 
 ## What is implemented
 
@@ -17,6 +18,7 @@ rebuild the current endpoints.
 - `/attendance` endpoint
 - `/restart` endpoint
 - `/gallery` endpoint
+- Frontend to view classified images (`/gallery`)
 - Base64 input validation
 - Random classification response (mock)
 - Middleware for ngrok HTTPS

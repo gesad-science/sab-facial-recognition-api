@@ -74,6 +74,10 @@ def create_person(person: PersonBase, session: SessionDep):
     session.refresh(db_person)
     return db_person
 
+@app.get("/")
+async def start():
+    return {"message": "API of facial classification"}
+
 @app.delete("/restart/", status_code=status.HTTP_204_NO_CONTENT)
 def delete_person(session: SessionDep):
     with Session(engine) as session:
@@ -115,10 +119,6 @@ def read_people(
     people = session.exec(select(Person).offset(offset).limit(limit)).all()
     return people
 
-@app.get("/attendence")
-async def fake_attendance() -> RedirectResponse: 
-    return RedirectResponse(url="https://youtu.be/dQw4w9WgXcQ?si=KeYXsJOF8bPp7N_Q")
-
 @app.get("/gallery/", response_class=HTMLResponse)
 async def view_gallery(request: Request, session: SessionDep):
     statement = select(Person).order_by(Person.date.desc())
@@ -128,3 +128,10 @@ async def view_gallery(request: Request, session: SessionDep):
         "gallery.html", 
         {"request": request, "people": people}
     )
+
+@app.get("/galery/")
+async def fake_gallery() -> RedirectResponse: 
+    """
+    just a joke
+    """
+    return RedirectResponse(url="https://youtu.be/dQw4w9WgXcQ?si=KeYXsJOF8bPp7N_Q")
