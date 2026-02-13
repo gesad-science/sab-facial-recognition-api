@@ -1,31 +1,37 @@
-# FastAPI – API Rewrite (WIP)
+# FastAPI – API Rewrite
 
 This branch contains an initial rewrite of the existing API using FastAPI.
 The goal is to study the framework, its best practices, and gradually
 rebuild the current endpoints.
 
+## To run
+
+FastAPI: `uv run fastapi dev app/main.py`
+NGROK: `ngrok http 8000`
+
 ## What is implemented
 
 - FastAPI application setup
 - Pydantic models for request validation
-- `/classify` endpoint (stub implementation)
-- Base64 input validation
-- Basic response structure for classification
+- SQLModel database
+- `/mock/classify` endpoint
 - `/attendance` endpoint
+- `/restart` endpoint
+- `/gallery` endpoint
+- Frontend to view classified images (`/gallery`)
+- Base64 input validation
+- Random classification response (mock)
+- Middleware for ngrok HTTPS
 
 ## Work in progress
 
-- Real image decoding and preprocessing
-- Integration with actual ML model
+- Integration with a ML model
 - Proper error handling and edge cases
-- Database integration (SQL)
 - Project structure and file organization
-- HTTPS setup (as recommended by FastAPI documentation)
-- Input/output schema refinement
+- HTTPS setup (FastAPI Cloud)
 - Unit tests
-- Logging
 
-## 🧠 Notes
+## Notes
 
 - This is a study-driven rewrite.
 - Current classification logic is mocked.

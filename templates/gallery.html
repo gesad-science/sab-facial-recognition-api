@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classification Gallery</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 10px; text-align: center; }
+        .card img { max-width: 100%; border-radius: 5px; height: 150px; object-fit: cover; }
+        .name { font-weight: bold; margin-top: 10px; display: block; }
+        .info { font-size: 0.8em; color: #666; }
+        .confidence { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Classification Gallery</h1>
+    <div class="grid">
+        {% for person in people %}
+        <div class="card">
+            <img src="data:image/jpeg;base64,{{ person.base64 }}" alt="{{ person.name }}">
+            
+            <span class="name">{{ person.name }}</span>
+            <span class="info">ID: {{ person.id }}</span><br>
+            <span class="info">Confidence: <span class="confidence">{{ (person.confidence * 100) | round(2) }}%</span></span><br>
+            <span class="info">{{ person.date.strftime('%d/%m/%Y %H:%M') }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
