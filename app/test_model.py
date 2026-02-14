@@ -172,7 +172,7 @@ def main(image_path):
 
         aligned_img = align_face(original_img, landmarks)
 
-        if align_face is not None:
+        if aligned_img is not None:
             path_aligned = os.path.join(BASE_OUTPUT_DIR, 'aligned', f'aligned_{file_name}')
             cv2.imwrite(path_aligned, aligned_img)
             print(f"Saved: {path_aligned}")
