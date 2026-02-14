@@ -1,15 +1,22 @@
 import os
 import cv2
 import math
+import torch
 import mediapipe as mp
+from facenet_pytorch import InceptionResnetV1
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import drawing_styles, drawing_utils
+import sklearn
+import joblib 
 import numpy as np
 
 MODEL_PATH = 'app/models/face_landmarker.task'
-INPUT_IMAGE = 'app/input_images/eu.jpg'
+INPUT_IMAGE = 'app/input_images/face_test2.png'
 BASE_OUTPUT_DIR = 'app/image_results'
+
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+resnet = InceptionResnetV1(pretrained='vggface2').eval().to(DEVICE)
 
 LEFT_IRIS_CENTER = 468
 RIGHT_IRIS_CENTER = 473
@@ -120,8 +127,6 @@ def align_face(image, landmarks, target_size=(160, 160)):
 
     return aligned_face
 
-#starting whats missing
-"""
 def get_embedding(aligned_face):
     aligned_face = cv2.cvtColor(aligned_face, cv2.COLOR_BGR2RGB)
 
@@ -143,30 +148,17 @@ def get_embedding(aligned_face):
 
     return embedding.flatten().tolist()
 
-def recognize_face(image_path):
-    print(f"Recognizing: {image_path}")
-    img_bgr, landmarks, _ = get_landmarks_and_image(image_path)
-
-    if landmarks is None:
-        return "No face detected"
-
-    aligned = align_face(img_bgr, landmarks)
-    if aligned is None:
-        return "Could not align face"
-
-    emb = get_embedding(aligned)
-
-    prediction_idx = classifier.predict([emb])[0]
-    prediction_name = le.inverse_transform([prediction_idx])[0]
-
-    distances, _ = classifier.kneighbors([emb])
-    dist = distances[0][0]
-
-    return f"Prediction: {prediction_name} (Distance: {dist:.4f})"
-"""
-#ending whats missing
-
 def main(image_path):
+    try:
+        print("Loading models...")
+
+        classifier = joblib.load('app/models/classifier.joblib')
+        le = joblib.load('app/models/label_encoder.joblib')
+
+        print("Models loaded!")
+    except Exception as e:
+        print(f"Error on loading models: {e}")
+
     create_dirs()
 
     file_name = os.path.basename(image_path)
@@ -184,6 +176,19 @@ def main(image_path):
             path_aligned = os.path.join(BASE_OUTPUT_DIR, 'aligned', f'aligned_{file_name}')
             cv2.imwrite(path_aligned, aligned_img)
             print(f"Saved: {path_aligned}")
+
+            emb = get_embedding(aligned_img)
+
+            prediction_idx = classifier.predict([emb])[0]
+            prediction_name = le.inverse_transform([prediction_idx])[0]
+
+            distances, _ = classifier.kneighbors([emb])
+            dist = distances[0][0]
+
+            print('+' + '-'*max(18, 8 + len(prediction_name)) + '+')
+            print(f'| NAME: {prediction_name} ' + ' '*max(0, 10 - len(prediction_name)) + '|')
+            print(f'| DISTANCE: {dist:.4f} ' + ' '*max(0, len(prediction_name) - 10) + '|')
+            print('+' + '-'*max(18, 8 + len(prediction_name)) + '+')
     else:
         print("No face detected or error on processing.")
 
