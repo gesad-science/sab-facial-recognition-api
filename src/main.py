@@ -85,14 +85,14 @@ async def on_startup():
 async def opening_message():
     return {"message": "API of facial classification"}
 
-@app.delete("/restart/", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/restart", status_code=status.HTTP_204_NO_CONTENT)
 def delete_person(session: SessionDep):
     with Session(engine) as session:
         session.exec(delete(Person))
         session.commit()
         return
 
-@app.post("/mock/classify/", response_model=PersonPublic, status_code=status.HTTP_201_CREATED)            #we don't actually return a PersonPublic so db_person will be ajusted to a PersonPublic ('cause of "responde_model=")
+@app.post("/mock/classify", response_model=PersonPublic, status_code=status.HTTP_201_CREATED)            #we don't actually return a PersonPublic so db_person will be ajusted to a PersonPublic ('cause of "responde_model=")
 async def classify_face_mock(image: FaceImage, session: SessionDep):
     """
         this is the mock classification model endpoint
@@ -120,7 +120,7 @@ async def classify_face_mock(image: FaceImage, session: SessionDep):
         raise HTTPException(status_code=400, detail="impossible to create a new person")    #generic exception (for now)
     return new_person
 
-@app.post("/classify/", response_model=PersonPublic, status_code=status.HTTP_201_CREATED)
+@app.post("/classify", response_model=PersonPublic, status_code=status.HTTP_201_CREATED)
 async def classify_face(face_image: FaceImage, session: SessionDep):
     """
         this is the real classification model endpoint
@@ -161,7 +161,7 @@ async def classify_face(face_image: FaceImage, session: SessionDep):
         raise HTTPException(status_code=400, detail="impossible to create a new person")
     return new_person
     
-@app.get("/attendance/", response_model=list[PersonPublic])
+@app.get("/attendance", response_model=list[PersonPublic])
 async def read_people(
     session: SessionDep,
     offset: int = 0,
@@ -170,7 +170,7 @@ async def read_people(
     people = session.exec(select(Person).offset(offset).limit(limit)).all()
     return people
 
-@app.get("/gallery/", response_class=HTMLResponse)
+@app.get("/gallery", response_class=HTMLResponse)
 async def view_gallery(request: Request, session: SessionDep):
     statement = select(Person).order_by(Person.date.desc())
     people = session.exec(statement).all()
@@ -180,7 +180,7 @@ async def view_gallery(request: Request, session: SessionDep):
         {"request": request, "people": people}
     )
 
-@app.get("/galery/")
+@app.get("/galery")
 async def fake_gallery() -> RedirectResponse: 
     """
     just a joke
