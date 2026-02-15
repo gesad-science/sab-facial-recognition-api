@@ -11,7 +11,7 @@
         .card img { max-width: 100%; border-radius: 5px; height: 150px; object-fit: cover; }
         .name { font-weight: bold; margin-top: 10px; display: block; }
         .info { font-size: 0.8em; color: #666; }
-        .confidence { color: green; font-weight: bold; }
+        .distance { color: green; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -23,7 +23,7 @@
             
             <span class="name">{{ person.name }}</span>
             <span class="info">ID: {{ person.id }}</span><br>
-            <span class="info">Confidence: <span class="confidence">{{ (person.confidence * 100) | round(2) }}%</span></span><br>
+            <span class="info">Distance: <span class="distance">{{ person.distance | round(2) }}</span></span><br>
             <span class="info">{{ person.date.strftime('%d/%m/%Y %H:%M') }}</span>
         </div>
         {% endfor %}

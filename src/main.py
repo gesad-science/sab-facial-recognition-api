@@ -35,7 +35,7 @@ app.add_middleware(
 class PersonBase(SQLModel):
     name: str = sqlField(index=True)                            #index is True to search be easier (filter by name)
     base64: str
-    confidence: float
+    distance: float
 
 class Person(PersonBase, table=True):
     id: int | None = sqlField(default=None, primary_key=True)   #default is None 'cause we want to be automatic without specify the id
@@ -94,6 +94,9 @@ def delete_person(session: SessionDep):
 
 @app.post("/mock/classify/", response_model=PersonPublic, status_code=status.HTTP_201_CREATED)            #we don't actually return a PersonPublic so db_person will be ajusted to a PersonPublic ('cause of "responde_model=")
 async def classify_face_mock(image: FaceImage, session: SessionDep):
+    """
+        this is the mock classification model endpoint
+    """
     try:
         base64.b64decode(image.base64, validate=True)
     except:
@@ -109,7 +112,7 @@ async def classify_face_mock(image: FaceImage, session: SessionDep):
     datas = PersonBase(
         name=random.choice(classes),
         base64=image.base64,
-        confidence=random.uniform(0.5, 1)
+        distance=random.uniform(0, 0.5)
     )
     try:
         new_person = create_person(datas, session)
@@ -119,12 +122,15 @@ async def classify_face_mock(image: FaceImage, session: SessionDep):
 
 @app.post("/classify/", response_model=PersonPublic, status_code=status.HTTP_201_CREATED)
 async def classify_face(face_image: FaceImage, session: SessionDep):
+    """
+        this is the real classification model endpoint
+    """
     try:
         base64.b64decode(face_image.base64, validate=True)
     except:
         raise HTTPException(status_code=422, detail="Base64 field is not a valid Base64")
     
-    #converting
+    #converting base64 to image
     if "," in face_image.base64:
         face_image.base64 = face_image.base64.split(",")[1]
 
@@ -133,12 +139,20 @@ async def classify_face(face_image: FaceImage, session: SessionDep):
     image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
     #end converting
 
-    annotated_img, prediction_name, dist = model.classify_face(image)
+    try:
+        annotated_img, prediction_name, dist = model.classify_face(image)
+    except:
+        raise HTTPException(status_code=422, detail="the photo hasn't a face. impossible to classify")
+
+    #converting image to base64
+    _, buffer = cv2.imencode(".jpg", annotated_img)
+    annotated_img_b64 = base64.b64encode(buffer).decode('utf-8')
+    #end converting
 
     datas = PersonBase(
         name=prediction_name,
-        base64=face_image.base64,
-        confidence=dist                 #it will change ( confidence -> dist )
+        base64=annotated_img_b64,
+        distance=dist
     )
 
     try:

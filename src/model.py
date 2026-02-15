@@ -58,8 +58,8 @@ def get_landmarks_and_image(image, draw=True):
 
     annotated = None
     if draw:
-        annotated = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR)        #sugestion
-        #annotated = np.copy(rgb_img)                               #original version
+        annotated = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR)
+        
         for face_landmarks in detection_result.face_landmarks:
             drawing_utils.draw_landmarks(
                 image=annotated,
@@ -164,6 +164,6 @@ def classify_face(image):
             distances, _ = MODELS["classifier"].kneighbors([emb])
             dist = distances[0][0]
     else:
-        print("No face detected or error on processing.")
+        raise print("No face detected or error on processing.")
     
     return annotated_img, prediction_name, dist

@@ -23,7 +23,7 @@ NGROK: `ngrok http 8000`
 - `/gallery` endpoint
 - Frontend to view classified images (`/gallery`)
 - Base64 input validation
-- Random classification response (mock)
+- Random classification response (`/mock/classify`)
 - Middleware for ngrok HTTPS
 - Integration with a ML model
 
@@ -33,9 +33,3 @@ NGROK: `ngrok http 8000`
 - Project structure and file organization
 - HTTPS setup (FastAPI Cloud)
 - Unit tests
-
-## Notes
-
-- This is a study-driven rewrite.
-- Current classification logic is mocked.
-- Code structure and patterns may change as the study progresses.
