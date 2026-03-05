@@ -1,4 +1,3 @@
-import os
 import cv2
 import math
 import torch
@@ -7,7 +6,6 @@ from facenet_pytorch import InceptionResnetV1
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import drawing_styles, drawing_utils
-import sklearn
 import joblib 
 import numpy as np
 

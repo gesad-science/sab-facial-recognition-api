@@ -3,7 +3,7 @@ name = "fastapi-sab"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
 dependencies = [
     "facenet-pytorch>=2.5.3",
     "fastapi[standard]>=0.128.0",
@@ -12,7 +12,6 @@ dependencies = [
     "numpy>=2.4.2",
     "opencv-python>=4.13.0.92",
     "pyngrok>=7.5.0",
-    "scikit-learn>=1.8.0",
     "sqlmodel>=0.0.32",
     "torch>=2.10.0",
     "torchvision>=0.25.0",

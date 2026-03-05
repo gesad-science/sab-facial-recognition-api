@@ -1,15 +1,68 @@
-# FastAPI – API Rewrite
+# SAB Camera Access - Backend
 
-This branch contains an initial rewrite of the existing API using FastAPI.
+Backend responsible for facial recognition and automatic attendance recording in classrooms.
 
-The goal is to study the framework, its best practices, and gradually
-rebuild the current endpoints.
+## Tech Stack
 
-## To run
+- Python
+- FastApi
+- SQLModel
+- OpenCV
+- ngrok
+- uv
 
-FastAPI: `uv run fastapi dev src/main.py`
+## Requirements
 
-NGROK: `ngrok http 8000`
+- Python 3.11+
+- ngrok
+- uv
+
+## Setup
+
+### 1. Configure ngrok
+
+Create an account at https://ngrok.com and copy your authtoken.
+
+Run: `ngrok config add-authtoken <YOUR_AUTHTOKEN>`
+
+### 2. Install dependencies
+
+`pip install uv`
+`uv sync`
+
+### 3. Run the API
+
+terminal 1: `uv run fastapi dev src/main.py`
+
+terminal 2: `ngrok http 8000`
+
+## Endpoints
+
+- `DELETE /restart` - restart database
+- `POST /mock/classify` - classify a person with mock method
+- `POST /classify` - classify a person with recognize model
+- `GET /attendance` - verify all classifications
+- `GET /gallery` - frontend to best view of attendance
+
+### Request example of POST /classify
+
+```json
+{
+    "base64": "<face-crop-base64>"
+}
+```
+
+### Response exemple of POST /classify
+
+```json
+{
+    "id": 1,
+    "name": "Guilherme",
+    "base64": "string",
+    "distance": 0.19,
+    "date": "2026-03-05T19:59:04.850Z"
+}
+```
 
 ## What is implemented
 
