@@ -10,8 +10,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field as pField
 import base64
-from io import BytesIO
-from PIL import Image
 import numpy as np
 import cv2
 from datetime import datetime
